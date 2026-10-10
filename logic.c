@@ -116,10 +116,16 @@ int count_variables(char *str, char *vars, int size)
     return cnt;
 }
 
-void to_rpn(char *string, char *tokens)
+void to_rpn(char *string, char *tokens, int len)
 {
-    char stack[MAX_SIZE]; int stack_index = 0;
+    char *stack = malloc(len); int stack_index = 0;
     int token_index =0;
+
+    if (stack == NULL)
+    {
+        printf("Не удалось выделить память для стека.");
+        return;
+    }
 
     for (int i=0; string[i] != '\0'; i++)
     {
@@ -165,17 +171,25 @@ void to_rpn(char *string, char *tokens)
         }
     }
 
-    while (stack_index>=0) 
+    while (stack_index>0) 
     {
-            tokens[token_index++] = stack[stack_index--];
+            tokens[token_index++] = stack[--stack_index];
 
     }
     tokens[token_index] = '\0';
+
+    free(stack);
 }
 
-char calculate(char *str, int size)
+char calculate(char *str, int size, int len)
 {
-    char stack[MAX_SIZE]; int ind=0;
+    char *stack = malloc(len); int ind=0;
+
+    if (stack == NULL)
+    {
+        printf("Не удалось выделить память для стека.");
+        return '1';
+    }
 
     for (int i=0;i<size;i++)
     {
@@ -191,12 +205,21 @@ char calculate(char *str, int size)
             int res = apply_binary(op1,op2,str[i]);
             stack[ind++] = res+ '0';
         }
-    } return stack[0];
+    } 
+    char rez = stack[0];
+    free(stack);
+    return rez;
 }
-char result(char *str, int *vals)
+char result(char *str, int *vals, int len)
 {
-    char substr[MAX_SIZE]; int i=0,ind=0;
-    
+    char *substr = malloc(len); int ind=0;
+
+    if (substr == NULL)
+    {
+        printf("Не удалось выделить память для вспомогательной строки.");
+        return '1';
+    }
+
     for (int i=0; str[i]!='\0';i++)
     {
         if (isalpha((unsigned char)str[i])) {
@@ -205,7 +228,9 @@ char result(char *str, int *vals)
         else 
             substr[ind++] = str[i];
     }
-    return calculate(substr,ind);
+    char rez = calculate(substr,ind, len);
+    free(substr);
+    return rez;
 
 } 
 void generate(int *vals, int cnt, int num, char *vars) 
