@@ -4,6 +4,7 @@
 
 #include "logic.h"
 #include "normal_forms.h"
+#include "dummy_variables.h"
 
 
 int main(int argc, char *argv[])
@@ -132,6 +133,11 @@ int main(int argc, char *argv[])
 
     free(scnf);
     free(sdnf);
+
+    char dumm_vars[VAR_COUNT];
+
+    dum_vars(table, combinations, count_vars, dumm_vars, count_vars, variables);
+    print_dum_vars(dumm_vars);
 
     for (int i = 0; i < rows; i++)
     {

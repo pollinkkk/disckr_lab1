@@ -19,5 +19,4 @@ void to_rpn(char *string, char *tokens, int len);
 char calculate(char *str, int size, int len);
 char result(char *str, int *vals, int len);
 void generate(int *vals, int cnt, int num, char *vars);
-void write_to_file(int **tabl, int rows, int columns);
 #endif

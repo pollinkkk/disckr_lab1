@@ -241,25 +241,4 @@ void generate(int *vals, int cnt, int num, char *vars)
         vals[vars[cnt-1-i] - 'a'] = bit;
     } return ;
 }
-
-void write_to_file(int **tabl, int rows, int columns)
-{
-    FILE *file = fopen("tabl.txt", "w");
-
-    if (file == NULL)
-    {
-        printf("Не удалось открыть файл: %s\n", "tabl.txt");
-        perror("fopen");
-        return;
-    }
-    for (int i=0; i<rows; i++)
-    {
-        for (int j=0; j<columns; j++)
-        {
-            fprintf(file, "%d ", tabl[i][j]);
-        }
-        fprintf(file, "\n");
-    }
     
-    fclose(file);
-}

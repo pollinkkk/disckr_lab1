@@ -68,6 +68,7 @@ void build_sdnf(int ** table, int rows, int columns, char *vars, char *sdnf)
 void print_scnf(char *scnf)
 {
     int i = 0;
+    printf("СКНФ:\n");
     while (scnf[i] != '\0') 
     {
         printf("%c", scnf[i++]);
@@ -80,6 +81,7 @@ void print_scnf(char *scnf)
 void print_sdnf(char *sdnf)
 {
     int i = 0;
+    printf("СДНФ:\n");
     while (sdnf[i] != '\0') 
     {
         printf("%c", sdnf[i++]);
