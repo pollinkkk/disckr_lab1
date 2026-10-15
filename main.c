@@ -5,6 +5,7 @@
 #include "logic.h"
 #include "normal_forms.h"
 #include "dummy_variables.h"
+#include "bazis.h"
 
 
 int main(int argc, char *argv[])
@@ -113,8 +114,7 @@ int main(int argc, char *argv[])
         table[i][count_vars] = res - '0';
         printf("%c\n", res);
     }
-    
-    free(tokens);
+
 
     char *scnf = malloc(rows * (3 * count_vars + 2)+1);
     char *sdnf = malloc(rows * (3 * count_vars + 2)+1);
@@ -125,19 +125,134 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    build_scnf(table, combinations, count_vars, variables, scnf);
-    build_sdnf(table, combinations, count_vars, variables, sdnf);
+    build_scnf(table, combinations, count_vars, variables, scnf, count_vars);
+    build_sdnf(table, combinations, count_vars, variables, sdnf, count_vars);
 
+    printf("СКНФ:\n");
     print_scnf(scnf);
+    printf("СДНФ:\n");
     print_sdnf(sdnf);
-
-    free(scnf);
-    free(sdnf);
 
     char dumm_vars[VAR_COUNT];
 
     dum_vars(table, combinations, count_vars, dumm_vars, count_vars, variables);
     print_dum_vars(dumm_vars);
+
+    char *basis;
+    printf("Запись через базис {&, |, !}:\n");
+    if (sdnf[0] != '\0')
+    {
+        print_sdnf(sdnf);
+        basis = sdnf;
+        
+    }
+    else
+    {
+        print_scnf(scnf);
+        basis = scnf;
+    }
+
+    if (count_vars == 0)
+    {
+        printf("Запись через базис стрелки Пирса {-}: \n");
+        printf("Записи через базис нет.\n");
+        printf("Запись через базис штриха Шеффера {#}: \n");
+        printf("Записи через базис нет.\n");
+        printf("Запись через полином Жегалкина {^, &, 1}: \n");
+        printf("%c\n", basis[0]);
+        return 0;
+    }
+    if (check_operators(tokens))
+    {
+        char *basis2 = malloc(len_bas(tokens)+1);
+        if (basis2 == NULL)
+        {
+            printf("Ошибка выделения памяти: для второго базиса.");
+            return 1;
+        }
+        bazis_2(tokens, basis2);
+        printf("Запись через базис стрелки Пирса {-}: \n");
+        print_bazis(basis2);
+        free(basis2);
+
+        char *basis3 = malloc(len_bas(tokens)+1);
+        if (basis3 == NULL)
+        {
+            printf("Ошибка выделения памяти: для третьего базиса.");
+            return 1;
+        }
+        bazis_3(tokens, basis3);
+        printf("Запись через базис штриха Шеффера {#}: \n");
+        print_bazis(basis3);
+        free(basis3);
+    }
+    else 
+    {
+        char *rpn_basis = malloc(len(basis)+1);
+        if (rpn_basis == NULL)
+        {
+            printf("Ошибка выделения памяти: для опз базиса.");
+            return 1;
+        }
+        to_rpn(basis, rpn_basis, len(basis));
+
+        char *basis2 = malloc(len_bas(rpn_basis)+1);
+        if (basis2 == NULL)
+        {
+            printf("Ошибка выделения памяти: для второго базиса.");
+            return 1;
+        }
+        bazis_2(rpn_basis, basis2);
+        printf("Запись через базис стрелки Пирса {-}: \n");
+        print_bazis(basis2);
+        free(basis2);
+
+        char *basis3 = malloc(len_bas(rpn_basis)+1);
+        if (basis3 == NULL)
+        {
+            printf("Ошибка выделения памяти: для третьего базиса.");
+            return 1;
+        }
+        bazis_3(rpn_basis, basis3);
+        printf("Запись через базис штриха Шеффера {#}: \n");
+        print_bazis(basis3);
+        free(basis3);
+        free(rpn_basis);
+
+    }
+
+    free(tokens);
+    free(scnf);
+    free(sdnf);
+
+    int *rez_f = malloc(combinations * sizeof(int));
+    if (rez_f == NULL)
+    {
+        printf("Ошибка выделения памяти: для столбца результатов.");
+        return 1;
+    }
+    get_rez(rez_f, table, combinations, count_vars);
+    int *coeff = malloc(combinations * sizeof(int));
+    if (coeff == NULL)
+    {
+        printf("Ошибка выделения памяти: для коэффицентов.");
+        return 1;
+    }
+
+    triangel_Zegalkin(rez_f, combinations, coeff, 0);
+
+    int ind = 0;
+    char *basis4 = malloc(count_vars * (1 << count_vars) + 2);
+    bazis_4(coeff, combinations, basis4, &ind, variables, count_vars);
+    printf("Запись через полином Жегалкина {^, &, 1}: \n");
+    if (basis4[0] != '\0')
+        print_bazis(basis4);
+    else
+        printf("0\n");
+    
+    free(basis4);
+    free(coeff);
+    free(rez_f);
 
     for (int i = 0; i < rows; i++)
     {
