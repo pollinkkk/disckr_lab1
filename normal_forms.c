@@ -1,8 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void build_scnf(int ** table, int rows, int columns, char *vars, char *scnf)
+void build_scnf(int **table, int rows, int columns, char *vars, char *scnf, int cnt_vars)
 {
+    if (cnt_vars == 0)
+    {
+        if (table[0][0] == 0) 
+        {
+            scnf[0] = '0';
+            scnf[1] = '\0';
+            return;
+        }
+
+        scnf[0] = '\0';
+        return;
+    }
     int current_ind = 0;
     for (int i=0; i<rows; i++)
     {
@@ -33,8 +45,20 @@ void build_scnf(int ** table, int rows, int columns, char *vars, char *scnf)
     scnf[current_ind] = '\0';
 }
 
-void build_sdnf(int ** table, int rows, int columns, char *vars, char *sdnf)
+void build_sdnf(int **table, int rows, int columns, char *vars, char *sdnf, int cnt_vars)
 {
+    if (cnt_vars == 0)
+    {
+        if (table[0][0] == 1) 
+        {
+            sdnf[0] = '1';
+            sdnf[1] = '\0';
+            return;
+        }
+
+        sdnf[0] = '\0';
+        return;
+    }
     int current_ind = 0;
     for (int i=0; i<rows; i++)
     {
@@ -68,7 +92,6 @@ void build_sdnf(int ** table, int rows, int columns, char *vars, char *sdnf)
 void print_scnf(char *scnf)
 {
     int i = 0;
-    printf("СКНФ:\n");
     while (scnf[i] != '\0') 
     {
         printf("%c", scnf[i++]);
@@ -81,7 +104,6 @@ void print_scnf(char *scnf)
 void print_sdnf(char *sdnf)
 {
     int i = 0;
-    printf("СДНФ:\n");
     while (sdnf[i] != '\0') 
     {
         printf("%c", sdnf[i++]);
