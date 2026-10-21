@@ -36,7 +36,7 @@ int len_bas(char *str)
         else if(str[i] == '!') 
         {
             // проверяем на переполнение
-            if (stack[ind-1]*2 > (max_len-3) / 2)
+            if (stack[ind-1] > (max_len-3) / 2)
             {
                 printf("Длина базиса выходит за пределы int.");
                 return -1;

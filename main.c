@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <windows.h>
 
 #include "logic.h"
@@ -7,6 +8,14 @@
 #include "dummy_variables.h"
 #include "bazis.h"
 
+void free_table(int **table, int rows)
+{
+    for (int i = 0; i < rows; i++)
+        {
+            free(table[i]);
+        }
+    free(table);
+}
 
 int main(int argc, char *argv[])
 {
@@ -65,6 +74,7 @@ int main(int argc, char *argv[])
     {
         perror("Не удалось выделить память для чтения строки из файла.");
         fclose(file);
+        free(string);
         return 1;
     }
 
@@ -73,8 +83,12 @@ int main(int argc, char *argv[])
     {
         printf("Не удалось считать строку\n");
         fclose(file);
+        free(string);
         return 1;
     }
+
+    // закрываем файл
+    fclose(file);
 
     // выделяем память сразу для двух строк
     // tokens — формула в обратной польской записи
@@ -85,11 +99,17 @@ int main(int argc, char *argv[])
     if (tokens == NULL )
     {
         perror("Не удалось выделить память для обработки токенов.");
+        free(string);
+        free(sub_string);
+        free(tokens);
         return 1;
     }
     if (sub_string == NULL )
     {
         perror("Не удалось выделить память для дополнительной строки.");
+        free(string);
+        free(sub_string);
+        free(tokens);
         return 1;
     }
 
@@ -114,6 +134,8 @@ int main(int argc, char *argv[])
     // перевод в опз
     if (to_rpn(sub_string, tokens, size_file))
     {
+        free(tokens);
+        free(sub_string);
         return 1;
     }
     free(sub_string);
@@ -128,6 +150,7 @@ int main(int argc, char *argv[])
     if (table == NULL )
     {
         perror("Не удалось выделить память для таблицы истинности.");
+        free(tokens);
         return 1;
     }
 
@@ -138,6 +161,7 @@ int main(int argc, char *argv[])
         if (table[i] == NULL )
         {
             perror("Не удалось выделить память для таблицы истинности.");
+            free(tokens);
             return 1;
         }
     }
@@ -168,6 +192,12 @@ int main(int argc, char *argv[])
         int res = result(tokens, vals, size_file);
         if (res == -1)
         {
+            free(tokens);
+            for (int i = 0; i < rows; i++)
+            {
+                free(table[i]);
+            }
+            free(table);
             return 1;
         }
         table[i][count_vars] = res;
@@ -189,6 +219,8 @@ int main(int argc, char *argv[])
     if (scnf == NULL || sdnf == NULL)
     {
         perror("Не удалось выделить память для СКНФ/СДНФ.");
+        free(tokens);
+        free_table(table, rows);
         return 1;
     }
     // строим СКНФ 
@@ -211,9 +243,9 @@ int main(int argc, char *argv[])
     // объявляем указатель на строку под базис
     char *basis;
     printf("Запись через базис {&, |, !}:\n");
-    if (sdnf[0] != '\0')
+    if (sdnf[0] != '\0' && (scnf[0] == '\0' || len(sdnf) <= len(scnf) && scnf[0] != '\0'))
     {
-        // если сднф не пустая выводим ее
+        // если сднф не пустая и она короче скнф выводим ее
         // и она будет строкой для базса
         print_sdnf(sdnf);
         basis = sdnf;
@@ -221,7 +253,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        // если сднф пустая выводим скнф
+        // если сднф пустая или скнф короче выводим скнф
         // и она будет строкой для базса
         print_scnf(scnf);
         basis = scnf;
@@ -236,7 +268,10 @@ int main(int argc, char *argv[])
         printf("Записи через базис нет.\n");
         printf("Запись через полином Жегалкина {^, &, 1}: \n");
         printf("%c\n", basis[0]);
-        fclose(file);
+        free(tokens);
+        free(scnf);
+        free(sdnf);
+        free_table(table, rows);
         return 0;
     }
 
@@ -247,17 +282,30 @@ int main(int argc, char *argv[])
         if (len_bas_toks == -1)
         {
             printf("Не удалось корректно посчитать длину базиса");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         char *basis2 = malloc(len_bas_toks+1);
         if (basis2 == NULL)
         {
             perror("Ошибка выделения памяти: для второго базиса.");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         // преобразуем исходную ОПЗ в выражение через стрелку Пирса
         if (bazis_2(tokens, basis2) == -1)
         {
+            free(basis2);
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         printf("Запись через базис стрелки Пирса {-}: \n");
@@ -268,11 +316,20 @@ int main(int argc, char *argv[])
         if (basis3 == NULL)
         {
             perror("Ошибка выделения памяти: для третьего базиса.");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         // преобразуем исходную ОПЗ в выражение через штрих Шеффера
         if (bazis_3(tokens, basis3) == -1)
         {
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free(basis3);
+            free_table(table, rows);
             return 1;
         };
         printf("Запись через базис штриха Шеффера {#}: \n");
@@ -287,11 +344,20 @@ int main(int argc, char *argv[])
         if (rpn_basis == NULL)
         {
             perror("Ошибка выделения памяти: для опз базиса.");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         // переводим выбранную СДНФ или СКНФ в ОПЗ
         if (to_rpn(basis, rpn_basis, len(basis)))
         {
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free(rpn_basis);
+            free_table(table, rows);
             return 1;
         }
 
@@ -299,6 +365,11 @@ int main(int argc, char *argv[])
         if (len_rpn_bas == -1)
         {
             printf("Не удалось корректно посчитать длину базиса");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free(rpn_basis);
+            free_table(table, rows);
             return 1;
         }
 
@@ -306,11 +377,20 @@ int main(int argc, char *argv[])
         if (basis2 == NULL)
         {
             perror("Ошибка выделения памяти: для второго базиса.");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         // преобразуем ОПЗ нормальной формы в запись через стрелку Пирса
         if (bazis_2(rpn_basis, basis2) == -1)
         {
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free(basis2);
+            free_table(table, rows);
             return 1;
         }
         printf("Запись через базис стрелки Пирса {-}: \n");
@@ -321,11 +401,20 @@ int main(int argc, char *argv[])
         if (basis3 == NULL)
         {
             perror("Ошибка выделения памяти: для третьего базиса.");
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free_table(table, rows);
             return 1;
         }
         // преобразуем ОПЗ нормальной формы в запись через штрих Шеффера
         if (bazis_3(rpn_basis, basis3))
         {
+            free(tokens);
+            free(scnf);
+            free(sdnf);
+            free(basis3);
+            free_table(table, rows);
             return 1;
         }
         printf("Запись через базис штриха Шеффера {#}: \n");
@@ -344,6 +433,7 @@ int main(int argc, char *argv[])
     if (rez_f == NULL)
     {
         perror("Ошибка выделения памяти: для столбца результатов.");
+        free_table(table, rows);
         return 1;
     }
     // копируем результаты из последнего столбца таблицы в rez_f
@@ -352,6 +442,8 @@ int main(int argc, char *argv[])
     if (coeff == NULL)
     {
         perror("Ошибка выделения памяти: для коэффицентов.");
+        free(rez_f);
+        free_table(table, rows);
         return 1;
     }
 
@@ -367,6 +459,9 @@ int main(int argc, char *argv[])
     {
 
         printf("Переполнение для полинома Жегалкина.");
+        free(rez_f);
+        free(coeff);
+        free_table(table, rows);
         return 1;
 
     }
@@ -376,6 +471,9 @@ int main(int argc, char *argv[])
     if (basis4 == NULL)
     {
         perror("Ошибка выделения памяти: для полинома Жегалкина.");
+        free(rez_f);
+        free(coeff);
+        free_table(table, rows);
         return 1;
     }
     // собираем строку полинома по коэффициентам
@@ -393,13 +491,7 @@ int main(int argc, char *argv[])
     free(basis4);
     free(coeff);
     free(rez_f);
+    free_table(table, rows);
 
-    for (int i = 0; i < rows; i++)
-    {
-        free(table[i]);
-    }
-    free(table);
-
-    fclose(file);
     return 0;
 }
