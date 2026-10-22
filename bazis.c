@@ -39,6 +39,7 @@ int len_bas(char *str)
             if (stack[ind-1] > (max_len-3) / 2)
             {
                 printf("Длина базиса выходит за пределы int.");
+                free(stack);
                 return -1;
             }
             // аргумент повторяется дважды + скобки + операция
@@ -54,6 +55,7 @@ int len_bas(char *str)
             if (stack[ind-2] > limit || stack[ind-1] > limit- stack[ind-2])
             {
                 printf("Длина базиса выходит за пределы int.");
+                free(stack);
                 return -1;
             }
             // каждый аргумент повторится дважды
@@ -169,6 +171,7 @@ int bazis_2(char *bazis, char *bazis2)
             if (sub_str == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
                 return -1;
             }
             // длина аргумента
@@ -202,11 +205,14 @@ int bazis_2(char *bazis, char *bazis2)
             if (sub_str1 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
                 return -1;
             }
             if (sub_str2 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
+                free(sub_str1);
                 return -1;
             }
             // размеры аргументов
@@ -256,11 +262,14 @@ int bazis_2(char *bazis, char *bazis2)
             if (sub_str1 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
                 return -1;
             }
             if (sub_str2 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
+                free(sub_str1);
                 return -1;
             }
             // размеры аргументов
@@ -349,6 +358,7 @@ int bazis_3(char *bazis, char *bazis3)
             if (sub_str == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
                 return -1;
             }
             // длина аргумента
@@ -381,11 +391,14 @@ int bazis_3(char *bazis, char *bazis3)
             if (sub_str1 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
                 return -1;
             }
             if (sub_str2 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
+                free(sub_str1);
                 return -1;
             }
 
@@ -436,11 +449,14 @@ int bazis_3(char *bazis, char *bazis3)
             if (sub_str1 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
                 return -1;
             }
             if (sub_str2 == NULL)
             {
                 printf("Ошибка выделения памяти.");
+                free(stack);
+                free(sub_str1);
                 return -1;
             }
             // размеры аргументов

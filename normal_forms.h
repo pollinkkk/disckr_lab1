@@ -1,5 +1,5 @@
-#ifndef NORMAL_FORMS
-#define NORMAL_FORMS
+#ifndef NORMAL_FORMS_H
+#define NORMAL_FORMS_H
 
 #include <stdio.h>
 

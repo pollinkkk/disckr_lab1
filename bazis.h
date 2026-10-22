@@ -1,5 +1,5 @@
-#ifndef BAZIS
-#define BAZIS
+#ifndef BAZIS_H
+#define BAZIS_H
 
 #include <stdio.h>
 

@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 {
     SetConsoleOutputCP(CP_UTF8); // для вывода кириллицы
 
-     // если аргументов не два: имя программы и путь к файлу
+     // если аргументов не два (имя программы и путь к файлу)
     if (argc != 2)
     {
         printf("Использование: %s <путь_к_файлу>\n", argv[0]);
@@ -211,6 +211,8 @@ int main(int argc, char *argv[])
     if (rows > (INT_MAX-1)/block_len)
     {
         printf("Таблица слишком большая для построения нормальных форм.");
+        free(tokens);
+        free_table(table, rows);
         return 1;
     }
     char *scnf = malloc(rows * block_len + 1);
@@ -228,6 +230,37 @@ int main(int argc, char *argv[])
      // строим СДНФ 
     build_sdnf(table, combinations, count_vars, variables, sdnf, count_vars);
 
+    // отдельно обрабатываем формулу без переменных
+    if (count_vars == 0)
+    {
+        if (table[0][0] == 1)
+        {
+            printf("СКНФ:\n");
+            printf("Не удалось построить СКНФ: функция тождественно истинна.\n");
+            printf("СДНФ:\n");
+            printf("%d\n", table[0][0]);
+        }
+        else 
+        {
+            printf("СКНФ:\n");
+            printf("%d\n", table[0][0]);
+            printf("СДНФ:\n");
+            printf("Не удалось построить СДНФ: функция тождественно ложна.\n");
+        }
+        printf("Фиктивные переменные:\n");
+        printf("Фиктивных переменных нет.\n");
+        printf("Запись через базис стрелки Пирса {-}: \n");
+        printf("Записи через базис нет.\n");
+        printf("Запись через базис штриха Шеффера {#}: \n");
+        printf("Записи через базис нет.\n");
+        printf("Запись через полином Жегалкина {^, &, 1}: \n");
+        printf("%d\n",table[0][0]);
+        free(tokens);
+        free(scnf);
+        free(sdnf);
+        free_table(table, rows);
+        return 0;
+    }
     printf("СКНФ:\n");
     print_scnf(scnf);
     printf("СДНФ:\n");
@@ -243,7 +276,7 @@ int main(int argc, char *argv[])
     // объявляем указатель на строку под базис
     char *basis;
     printf("Запись через базис {&, |, !}:\n");
-    if (sdnf[0] != '\0' && (scnf[0] == '\0' || len(sdnf) <= len(scnf) && scnf[0] != '\0'))
+    if (sdnf[0] != '\0' && (scnf[0] == '\0' || len(sdnf) <= len(scnf)))
     {
         // если сднф не пустая и она короче скнф выводим ее
         // и она будет строкой для базса
@@ -257,22 +290,6 @@ int main(int argc, char *argv[])
         // и она будет строкой для базса
         print_scnf(scnf);
         basis = scnf;
-    }
-
-    // отдельно обрабатываем формулу без переменных
-    if (count_vars == 0)
-    {
-        printf("Запись через базис стрелки Пирса {-}: \n");
-        printf("Записи через базис нет.\n");
-        printf("Запись через базис штриха Шеффера {#}: \n");
-        printf("Записи через базис нет.\n");
-        printf("Запись через полином Жегалкина {^, &, 1}: \n");
-        printf("%c\n", basis[0]);
-        free(tokens);
-        free(scnf);
-        free(sdnf);
-        free_table(table, rows);
-        return 0;
     }
 
     // проверяем, можно ли преобразовать исходную формулу напрямую
@@ -380,6 +397,7 @@ int main(int argc, char *argv[])
             free(tokens);
             free(scnf);
             free(sdnf);
+            free(rpn_basis);
             free_table(table, rows);
             return 1;
         }
@@ -390,6 +408,7 @@ int main(int argc, char *argv[])
             free(scnf);
             free(sdnf);
             free(basis2);
+            free(rpn_basis);
             free_table(table, rows);
             return 1;
         }
@@ -404,6 +423,7 @@ int main(int argc, char *argv[])
             free(tokens);
             free(scnf);
             free(sdnf);
+            free(rpn_basis);
             free_table(table, rows);
             return 1;
         }
@@ -414,6 +434,7 @@ int main(int argc, char *argv[])
             free(scnf);
             free(sdnf);
             free(basis3);
+            free(rpn_basis);
             free_table(table, rows);
             return 1;
         }
